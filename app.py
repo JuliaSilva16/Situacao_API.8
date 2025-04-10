@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = '<KEY>'
 
 
-@app.route('/novo_clientes', methods=['POST'])
+@app.route('/clientes', methods=['POST'])
 def cadastro_cliente():
 
     """
