@@ -1,47 +1,51 @@
 from flask import Flask, request, jsonify
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+
 from models import *
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = '<KEY>'
 
 
-@app.route('/clientes', methods=['POST'])
+@app.route('/novo_cliente', methods=['POST'])
 def cadastro_cliente():
 
     """
 
     :return: está retornando os dados do cadastro do cliente
     """
+    if not request.form['form_nome_cliente'] or not request.form['form_cpf'] or not request.form[
+        'form_telefone'] or not request.form['endereco']:
+            print('Obritório preencher todos os campos')
 
     try:
-        if request.method == 'POST':
-            if (not request.form["form_id_cliente"] or not request.form["form_nome_cliente"] or not request.form["form_cpf"]
-                    or not request.form["form_telefone"] or not request.form["form_endereco"]):
-                return jsonify({"error" : "Preencher todos os campos"})
-            else:
-                form_cadastro_cliente = Cliente(
-                    id_cliente=int(request.form.get("form_id_cliente")),
-                    nome_cliente=request.form.get("form_nome_cliente"),
-                    cpf=(request.form.get("form_cpf")),
-                    telefone=request.form.get("form_telefone"),
-                    endereco=request.form.get("form_endereco"),
+        dados_cliente = request.get_json()
 
-                )
-                form_cadastro_cliente.save()
+        nome_cliente = dados_cliente['nome_cliente']
+        cpf = dados_cliente['cpf']
+        telefone = dados_cliente['telefone']
+        endereco = dados_cliente['endereco']
 
-            return jsonify({
-                'mensagem': 'Cliente cadastrado com sucesso!',
-                'id_cliente': form_cadastro_cliente.id_cliente,
-                'nome': form_cadastro_cliente.nome_cliente,
-                'cpf': form_cadastro_cliente.cpf,
-                'telefone': form_cadastro_cliente.telefone,
-                'endereco': form_cadastro_cliente.endereco,
-            })
+        form_cadastro_cliente = Cliente(
+            nome_cliente=nome_cliente,
+            cpf=cpf,
+            telefone=telefone,
+            endereco=endereco,
+
+        )
+        form_cadastro_cliente.save()
+
+        return jsonify({
+            'mensagem': 'Cliente cadastrado com sucesso!'
+        })
+
     except ValueError:
         return jsonify({
             'Error': "Erro"
         })
+    except IntegrityError:
+        return jsonify({"Error": "Erro cpf já existente"})
 
 @app.route('/clientes', methods=["GET"])
 def clientes():
@@ -51,14 +55,11 @@ def clientes():
     """
 
     try:
-        sql_clientes = select(Cliente)
-        resultado_clientes = db_session.execute(sql_clientes).scalars()
+        sql_clientes = db_session.execute(select(Cliente)).scalars().all()
         lista_clientes = []
-        for cliente in resultado_clientes:
+        for cliente in sql_clientes:
             lista_clientes.append(cliente.serialize_user())
-        return jsonify({
-            "cliente":{lista_clientes}
-        })
+        return jsonify(lista_clientes)
 
     except ValueError:
         return jsonify({
@@ -71,36 +72,37 @@ def cadastro_veiculos():
 
     :return: está retornando os dados do cadastro do veiculo
     """
+    if not request.form['form_cliente_associado'] or not request.form['form_marca_veiculo'] or not request.form[
+        'form_modelo_veiculo'] or not request.form['form_placa_veiculo'] or not request.form['form_ano_fabricacao']:
+        print('Obritório preencher todos os campos')
+
     try:
-        if request.method == 'POST':
-            if (not request.form["form_id_veiculo"] or not request.form["form_cliente_associado"] or not request.form["form_marca_veiculo"]
-                    or not request.form["form_modelo_veiculo"] or not request.form["form_placa_veiculo"] or not request.form["form_ano_fabricacao"]):
-                return jsonify({"error" : "Preencher todos os campos"})
-            else:
-                form_cadastro_veiculo = Veiculo(
-                    id_veiculo = int(request.form.get("form_id_veiculo")),
-                    cliente_associado = int(request.form.get("form_cliente_associado")),
-                    marca_veiculo = request.form.get("form_marca_veiculo"),
-                    modelo_veiculo = request.form.get("form_placa_veiculo"),
-                    placa_veiculo = request.form.get("form_ano_fabricacao"),
-                    ano_fabricacao = request.form.get("form_ano_fabricao"),
+        dados_veiculo = request.get_json()
 
-                )
-                form_cadastro_veiculo.save()
+        cliente_associado = dados_veiculo['cliente_associado']
+        marca_veiculo  = dados_veiculo['marca_veiculo']
+        modelo_veiculo = dados_veiculo['modelo_veiculo']
+        placa_veiculo = dados_veiculo['placa_veiculo']
+        ano_fabricacao = dados_veiculo['ano_fabricacao']
 
-            return jsonify({
-                'mensagem': 'Cliente cadastrado com sucesso!',
-                'id_veiculo': form_cadastro_veiculo.id_veiculo,
-                'cliente_associado': form_cadastro_veiculo.cliente_associado,
-                'marca_veiculo': form_cadastro_veiculo.marca_veiculo,
-                'modelo_veiculo': form_cadastro_veiculo.modelo_veiculo,
-                'placa_veiculo': form_cadastro_veiculo.placa_veiculo,
-                'ano_fabricacao': form_cadastro_veiculo.ano_fabricacao,
-            })
+        form_cadastro_veculos = Veiculo(
+            cliente_associado=cliente_associado,
+            marca_veiculo =marca_veiculo,
+            modelo_veiculo=modelo_veiculo,
+            placa_veiculo=placa_veiculo,
+            ano_fabricacao=ano_fabricacao,
+
+        )
+        form_cadastro_veculos.save()
+
+        return jsonify({
+            'mensagem': 'Veiculo cadastrado com sucesso!'
+        })
     except ValueError:
         return jsonify({
             'Error': "Erro"
         })
+
 
 @app.route('/veiculos', methods=["GET"])
 def veiculos():
@@ -108,14 +110,14 @@ def veiculos():
 
     :return: está retornando os dados do veiculo
     """
+
     try:
-        sql_veiculos = select(Veiculo)
-        resultado_veiculos = db_session.execute(sql_veiculos).scalars()
-        lista_veiculos = []
-        for veiculo in resultado_veiculos:
-            lista_veiculos.append(veiculo.serialize_user())
+        sql_veiculo = db_session.execute(select(Veiculo)).scalars().all()
+        lista_veiculo = []
+        for veiculo in sql_veiculo:
+            lista_veiculo.append(veiculo.serialize_user())
         return jsonify({
-            "veiculo":{lista_veiculos}
+            "veiculo": {lista_veiculo}
         })
 
     except ValueError:
@@ -126,33 +128,31 @@ def veiculos():
 @app.route('/nova_ordem_servico', methods=['POST'])
 def cadastro_ordem_servico():
     """está retornando os dados do cadastro do ordem servico"""
+    if not request.form['form_veiculo_associado'] or not request.form['form_data_abertura'] or not request.form[
+        'form_descricao_servico'] or not request.form['form_status'] or not request.form['form_valor_estimado']:
+        print('Obritório preencher todos os campos')
     try:
-        if request.method == 'POST':
-            if (not request.form["form_id_ordem_servico"] or not request.form["form_veiculo_associado"] or not request.form["form_data_abertura"]
-                    or not request.form["form_descricao_servico"] or not request.form["form.status"] or not request.form["form_valor_estimado"]):
-                return jsonify({"error" : "Preencher todos os campos"})
-            else:
-                form_cadastro_ordem_servico = Ordem_servico(
-                    id_ordem_servico = int(request.form.get("form_id_ordem_servico")),
-                    veiculo_associado = int(request.form.get("form_veiculo_associado")),
-                    data_abertura = request.form.get("form_data_abertura"),
-                    descricao_servico = request.form.get("form_descricao_servico"),
-                    status = request.form.get("form_status"),
-                    valor_estimado = float(request.form.get("form_valor_estimado")),
-                )
-                form_cadastro_ordem_servico.save()
+        dados_servico = request.get_json()
 
-            return jsonify({
-                'mensagem':'Ordem cadastrado com sucesso!',
-                'id_ordem_servico': form_cadastro_ordem_servico.id_ordem_servico,
-                'veiculo_associado': form_cadastro_ordem_servico.veiculo_associado,
-                'data_abertura': form_cadastro_ordem_servico.data_abertura,
-                'descricao_servico': form_cadastro_ordem_servico.descricao_servico,
-                'status': form_cadastro_ordem_servico.status,
-                'valor_estimado': form_cadastro_ordem_servico.valor_estimado,
-            })
+        veiculo_associado = dados_servico['veiculo_associado']
+        data_abertura = dados_servico['data_abertura']
+        descricao_servico = dados_servico['descricao_servico']
+        status = dados_servico['status']
+        valor_estimado = dados_servico['valor_estimado']
 
+        form_ordem_servico = Ordem_servico(
+            veiculo_associado = veiculo_associado,
+            data_abertura = data_abertura,
+            descricao_servico = descricao_servico,
+            status = status,
+            valor_estimado = valor_estimado,
 
+        )
+        form_ordem_servico.save()
+
+        return jsonify({
+            'mensagem': 'Cliente cadastrado com sucesso!'
+        })
     except ValueError:
         return jsonify({
             'Error': "Erro"
@@ -178,6 +178,77 @@ def ordem_servico():
         return jsonify({
             'Error': "Erro"
         })
+
+
+
+
+
+@app.route('/editar_cliente/<int:cliente_id>', methods=["POST"])
+def editar_cliente(cliente_id):
+    dados_editar_cliente = request.get_json()
+    try:
+        atualizacao_cliente = db_session.execute(select(Cliente).where(Cliente.id_cliente == cliente_id)).scalars().first()
+
+        if not atualizacao_cliente:
+            return jsonify({"Error":'Não se encontra o cliente'})
+
+        if(not "nome_cliente" in  dados_editar_cliente or not "cpf" in dados_editar_cliente  or not "telefone" in dados_editar_cliente or not "endereco" in dados_editar_cliente):
+            return jsonify({"Error":"Obrigatório preencher todos os campos"}),400
+
+        cpf = dados_editar_cliente['cpf'].strip()
+        if atualizacao_cliente.cpf != cpf:
+            cpf_existe = db_session.query(Cliente).filter(Cliente.cpf == cpf).scalar()
+            if cpf_existe:
+                return jsonify({
+                    "error": "Este CPF já existe na lista de clientes"
+                }), 400
+
+        atualizacao_cliente.nome_cliente = dados_editar_cliente['nome_cliente']
+        atualizacao_cliente.cpf = dados_editar_cliente['cpf'].strip()
+        atualizacao_cliente.telefone = dados_editar_cliente['telefone'].strip()
+        atualizacao_cliente.endereco = dados_editar_cliente['endereco']
+
+        atualizacao_cliente.save()
+
+        return jsonify({
+            "nome": atualizacao_cliente.nome_cliente,
+            "cpf": atualizacao_cliente.cpf,
+            "telefone": atualizacao_cliente.telefone,
+            "endereco": atualizacao_cliente.endereco,
+        }), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+    finally:
+        db_session.close()
+
+
+@app.route('/status', methods=['GET'])
+def status():
+    try:
+        veiculo_ocupado = db_session.execute(
+            select(Veiculo).where(Veiculo.id_veiculo == Ordem_servico.veiculo).distinc(Veiculo.id_veiculo)).scalars()
+
+        veiculos = db_session.execute(select(Veiculo)).scalars()
+        lista_veiculo_ocupado = []
+        lista_veiculo_livre = []
+
+        for veiculo in veiculos:
+            lista_veiculo_ocupado.append(veiculo.serialize_user())
+
+        for vehicle in veiculos:
+            if vehicle.id_veiculo not in lista_veiculo_ocupado:
+                lista_veiculo_livre.append(vehicle.serialize_user())
+
+        return jsonify({
+            "veiculos ocupados":lista_veiculo_ocupado,
+            "veiculos livres":lista_veiculo_livre
+        }),200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 
 
 if __name__ == '__main__':
