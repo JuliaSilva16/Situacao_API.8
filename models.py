@@ -71,6 +71,7 @@ class Veiculo(Base):
 class Ordem_servico(Base):
     __tablename__ = 'TAB_OREDEM_SERVICO'
     id_ordem_servico = Column(Integer, primary_key=True)
+    cliente_associado = Column(Integer, ForeignKey('TAB_CLIENTE.id_cliente'))
     veiculo_associado = Column(Integer, ForeignKey('TAB_VEICULO.id_veiculo'))
     veiculo = relationship('Veiculo')
     data_abertura = Column(String, nullable=False,index=True)
@@ -92,6 +93,7 @@ class Ordem_servico(Base):
     def serialize_ordem_servico(self):
         dados_ordem_servico = {
             "id_ordem_servico":self.id_ordem_servico,
+            "cliente_associado":self.cliente_associado,
             "veiculo_associado":self.veiculo_associado,
             "data_abertura":self.data_abertura,
             "descricao_servico":self.descricao_servico,
