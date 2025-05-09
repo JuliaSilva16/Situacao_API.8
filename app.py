@@ -250,11 +250,11 @@ def editar_veiculo(veiculo_id):
         if not atualizacao_veiculo:
             return jsonify({"Error":'Não se encontrado veiculo'})
 
-        if(not "cliente_associado" in  dados_editar_veiculo or not "marca_veiculo" in dados_editar_veiculo  or not "modelo_veiculo" in dados_editar_veiculo or not "placa_veiculo" in dados_editar_veiculo or not "ano_fabricacao" in dados_editar_veiculo):
+        if not "cliente_associado" in dados_editar_veiculo or not "marca_veiculo" in dados_editar_veiculo  or not "modelo_veiculo" in dados_editar_veiculo or not "placa_veiculo" in dados_editar_veiculo or not "ano_fabricacao" in dados_editar_veiculo:
             return jsonify({"Error":"Obrigatório preencher todos os campos"}),400
 
-        placa = dados_editar_veiculo['placa'].strip()
-        if atualizacao_veiculo.cpf != placa:
+        placa = dados_editar_veiculo['placa_veiculo'].strip()
+        if atualizacao_veiculo.placa_veiculo != placa:
             placa_existe = db_session.query(Veiculo).filter(Veiculo.placa_veiculo == placa).scalar()
             if placa_existe:
                 return jsonify({
@@ -286,7 +286,7 @@ def editar_veiculo(veiculo_id):
 
 
 @app.route('/editar_ordem/<int:ordem_id>', methods=["POST"])
-def editar_ordem(ordem_id):
+def editar_ordem(ordem_id, cliente_associado,veiculo_associado):
     dados_editar_ordem = request.get_json()
     try:
         atualizacao_ordem = db_session.execute(select(Ordem_servico).where(Ordem_servico.id_ordem_servico == ordem_id)).scalars().first()
@@ -294,21 +294,23 @@ def editar_ordem(ordem_id):
         if not atualizacao_ordem:
             return jsonify({"Error":'Não se encontrado a ordem de servico'})
 
-        if(not "cliente_associado" in  dados_editar_ordem or not "veiculo_associado" in dados_editar_ordem  or not "data_abertura" in dados_editar_ordem or not "descricao_servico" in dados_editar_ordem or not "valor_estimado" in dados_editar_ordem):
+        if not "cliente_associado" in dados_editar_ordem or not "veiculo_associado" in dados_editar_ordem  or not "data_abertura" in dados_editar_ordem or not "descricao_servico" in dados_editar_ordem or not "valor_estimado" in dados_editar_ordem:
             return jsonify({"Error":"Obrigatório preencher todos os campos"}),400
 
-        placa = dados_editar_ordem['placa'].strip()
-        if atualizacao_ordem.cpf != placa:
-            placa_existe = db_session.query(Ordem_servico).filter(Ordem_servico.placa_veiculo == placa).scalar()
-            if placa_existe:
+        cliente_veiculo = dados_editar_ordem['cliente and veiculo'].strip()
+        if atualizacao_ordem.cliente and atualizacao_ordem.veiculo != cliente_veiculo:
+            cliente_associado_existe = db_session.query(Ordem_servico).filter(Ordem_servico.cliente_associado == cliente_associado).scalar()
+            veiculo_associado_existe = db_session.query(Ordem_servico).filter(Ordem_servico.veiculo_associado == veiculo_associado).scalar()
+            if cliente_associado_existe and veiculo_associado_existe:
                 return jsonify({
-                    "error": "Está placa já existe na lista de veiculos"
+                    "error": "Este cliente e veiculo já existe na lista de ordem de servico"
                 }), 400
 
-        dados_editar_ordem.cliente_associado = dados_editar_ordem['cliente_associado']
-        dados_editar_ordem.veiculo_associado = dados_editar_ordem['veiculo_associado']
+
+        dados_editar_ordem.cliente_associado = dados_editar_ordem['cliente_associado'].strip()
+        dados_editar_ordem.veiculo_associado = dados_editar_ordem['veiculo_associado'].strip()
         dados_editar_ordem.modelo_veiculo = dados_editar_ordem['modelo_veiculo']
-        dados_editar_ordem.data_abertura = dados_editar_ordem['data_abertura'].strip()
+        dados_editar_ordem.data_abertura = dados_editar_ordem['data_abertura']
         dados_editar_ordem.descricao_servico = dados_editar_ordem['descricao_servico']
         dados_editar_ordem.valor_estimado = dados_editar_ordem['valor_estimado']
 
