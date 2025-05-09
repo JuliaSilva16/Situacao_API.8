@@ -208,7 +208,7 @@ def editar_cliente(cliente_id):
         if not atualizacao_cliente:
             return jsonify({"Error":'Não se encontra o cliente'})
 
-        if(not "nome_cliente" in  dados_editar_cliente or not "cpf" in dados_editar_cliente  or not "telefone" in dados_editar_cliente or not "endereco" in dados_editar_cliente):
+        if not "nome_cliente" in dados_editar_cliente or not "cpf" in dados_editar_cliente  or not "telefone" in dados_editar_cliente or not "endereco" in dados_editar_cliente:
             return jsonify({"Error":"Obrigatório preencher todos os campos"}),400
 
         cpf = dados_editar_cliente['cpf'].strip()
