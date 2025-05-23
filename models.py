@@ -12,7 +12,7 @@ class Cliente(Base):
     id_cliente = Column(Integer, primary_key=True)
     nome_cliente = Column(String(40), nullable=False,index=True)
     cpf = Column(String(11), nullable=False, index=True,unique=True)
-    telefone = Column(String(11), nullable=False,index=True)
+    telefone = Column(String(11), nullable=False,index=True,unique=True)
     endereco = Column(String(50), nullable=False,index=True)
 
     def __repr__(self):
