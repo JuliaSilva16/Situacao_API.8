@@ -88,7 +88,7 @@ def clientes():
                 }
 
             Erros possíveis:
-                -se não tiver no formato dará erro 
+                -Se não tiver no formato dará erro 
 
         """
 
@@ -325,23 +325,21 @@ def editar_cliente(cliente_id):
                 - POST,nova_ordem_servico,<int:cliente_id>
 
             Parâmetros:
-                -<int:cliente_id>: ira pegar diretamente do id para a atualização 
-
+                -<int:cliente_id>: parâmetro que trás do id do cliente
+                
             Resposta:
             {
-                "cliente_associado" : 3,
-                "veiculo_associado" : 3,
-                "data_abertura" :"10/01/2025",
-                "descricao_servico" :"motor",
-                "valor_estimado":"5689",
-                "status": "concluido"
+                "nome_cliente": "Letíc1a M",
+                "cpf": "15425512345",
+                "telefone": "123",
+                "endereco": "Vitalino Stelin n° 471"
             }
 
             Erros possíveis:
-                -Se tiver um cliente ou veiculo associado igual outri  irá dar erro
+                -Se tiver um cpf ou um telefone igual irá dar erro
                 -se não tiver no formato dará erro 
 
-                """
+        """
 
         atualizacao_cliente = db_session.execute(select(Cliente).where(Cliente.id_cliente == cliente_id)).scalars().first()
 
@@ -399,6 +397,30 @@ def editar_cliente(cliente_id):
 def editar_veiculo(veiculo_id):
     dados_editar_veiculo = request.get_json()
     try:
+
+        """
+            Editar a lista dos veículos da mecânica
+
+            Endopoint:  
+                - POST, editar_veiculo, <int:veiculo_id>
+                
+            Parâmetros:
+                -<int:veiculo_id> parâmetro que trás do id do veículo
+
+            Resposta:
+            {
+                "cliente_associado": " Rafaela",
+                "marca_veiculo": "HB20",
+                "modelo_veiculo": "XRS",
+                "placa_veiculo": "PT123",
+                "ano_fabricacao": "2018"
+            }
+
+            Erros possíveis:
+                -Se a placa do veiculo tiver outro igual irá dar erro
+                -se não tiver no formato dará erro 
+        """
+
         atualizacao_veiculo = db_session.execute(select(Veiculo).where(Veiculo.id_veiculo == veiculo_id)).scalars().first()
 
         if not atualizacao_veiculo:
@@ -445,6 +467,32 @@ def editar_ordem(ordem_id):
     dados_editar_ordem = request.get_json()
 
     try:
+        """
+            Editar a lista  de ordem de serviço da mecânica
+
+            Endopoint:  
+                - POST, editar_ordem, <int:ordem_id>
+
+            Parâmetros:
+                -<int:ordem_id>parâmetro que trás do id do veículo
+
+            Resposta:
+            {
+               "cliente_associado": 2,
+                "veiculo_associado": 5,
+                "modelo_veiculo":"Civic",
+                "data_abertura": "10/05/2025",
+                "descricao_servico": "Troca de cor",
+                "valor_estimado": "7856.87",
+                "status": "concluido"
+            }
+
+            Erros possíveis:
+                -Se tiver um cliente ou veiculo associado igual outri  irá dar erro
+                -se não tiver no formato dará erro 
+
+        """
+
         atualizacao_ordem = db_session.execute(select(Ordem_servico).where(Ordem_servico.id_ordem_servico == ordem_id)).scalars().first()
 
         if not atualizacao_ordem:
@@ -501,6 +549,70 @@ def editar_ordem(ordem_id):
 @app.route('/status/<status02>', methods=["GET"])
 def status(status02):
     try:
+        """
+            Listar se o carro está pendente, em andamento ou concluído
+
+            Endopoint:  
+                - GET, status, status02
+            Parâmetros:
+                - status02 - uso de nome diferente para não confundir
+
+            Resposta:
+            {
+                "LISTA": [
+                    {
+                        "cliente_associado": 2,
+                        "data_abertura": "10/05/2025",
+                        "descricao_servico": "Troca de cor",
+                        "id_ordem_servico": 2,
+                        "status": "concluido",
+                        "valor_estimado": 7856.87,
+                        "veiculo_associado": 5
+                    },
+                    {
+                        "cliente_associado": 1,
+                        "data_abertura": "10/02/2025",
+                        "descricao_servico": "motor",
+                        "id_ordem_servico": 10,
+                        "status": "concluido",
+                        "valor_estimado": 5689,
+                        "veiculo_associado": 1
+                    },
+                    {
+                        "cliente_associado": 1,
+                        "data_abertura": "10/02/2025",
+                        "descricao_servico": "motor",
+                        "id_ordem_servico": 11,
+                        "status": "concluido",
+                        "valor_estimado": 5689,
+                        "veiculo_associado": 1
+                    },
+                    {
+                        "cliente_associado": 3,
+                        "data_abertura": "10/01/2025",
+                        "descricao_servico": "motor",
+                        "id_ordem_servico": 12,
+                        "status": "concluido",
+                        "valor_estimado": 5689,
+                        "veiculo_associado": 3
+                    },
+                    {
+                        "cliente_associado": 3,
+                        "data_abertura": "10/01/2025",
+                        "descricao_servico": "motor",
+                        "id_ordem_servico": 13,
+                        "status": "concluido",
+                        "valor_estimado": 5689,
+                        "veiculo_associado": 3
+                    }
+                ]
+            }
+
+            Erros possíveis:
+                -se não tiver no formato dará erro 
+
+        """
+
         sql_status = select(Ordem_servico).where(Ordem_servico.status == status02)
         resultado_status = db_session.execute(sql_status).scalars()
         lista_status = []
